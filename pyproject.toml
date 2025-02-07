@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "nonebot-plugin-taygedo-helper"
+version = "0.1.0"
+description = ""
+authors = ["Irelia <1074822720@qq.com>"]
+license = "MIT"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+nonebot2 = "^2.4.1"
+nonebot-adapter-onebot = "^2.4.6"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
