@@ -35,9 +35,9 @@ CONSTANTS = {
     'GETGAMEROLES': 'https://bbs-api.tajiduo.com/usercenter/api/v2/getGameRoles',
     'BINDROLE': 'https://bbs-api.tajiduo.com/usercenter/api/bindGameRole',
     'APPSIGNIN': 'https://bbs-api.tajiduo.com/apihub/api/signin',
-    'GAMESIGNIN': 'https://bbs-api.tajiduo.com/apihub/wapi/sign',
-    'GETSIGNINSTATE': 'https://bbs-api.tajiduo.com/apihub/wapi/signin/state',
-    'GETSIGNINREWARDS': 'https://bbs-api.tajiduo.com/apihub/wapi/sign/rewards',
+    'GAMESIGNIN': 'https://bbs-api.tajiduo.com/apihub/awapi/sign',
+    'GETSIGNINSTATE': 'https://bbs-api.tajiduo.com/apihub/awapi/signin/state',
+    'GETSIGNINREWARDS': 'https://bbs-api.tajiduo.com/apihub/awapi/sign/rewards',
 
     'REQUEST_HEADERS_BASE': {
         "platform": "android",

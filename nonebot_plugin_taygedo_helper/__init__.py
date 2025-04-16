@@ -18,7 +18,6 @@ import re
 
 require("nonebot_plugin_orm")
 require("nonebot_plugin_saa")
-require("nonebot_plugin_htmlrender")
 require("nonebot_plugin_apscheduler")
 
 from nonebot_plugin_orm import async_scoped_session, get_session
@@ -34,7 +33,7 @@ from .calculate import Calculate
 __plugin_meta__ = PluginMetadata(
     name="塔吉多助手",
     description="主要用于塔吉多APP签到和信息查询等功能",
-    usage="TODO",
+    usage="使用\"塔吉多登录\"命令进行登录并自动签到",
 
     type="application",
     # 发布必填，当前有效类型有：`library`（为其他插件编写提供功能），`application`（向机器人用户提供功能）。
