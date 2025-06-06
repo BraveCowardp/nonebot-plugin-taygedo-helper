@@ -3,7 +3,7 @@ from nonebot import get_plugin_config, on_command, require, on_regex
 from nonebot.adapters.onebot.v11 import Message, Bot
 from nonebot.plugin import PluginMetadata
 from nonebot.log import logger
-from nonebot.adapters.onebot.v11.event import GroupMessageEvent
+from nonebot.adapters.onebot.v11.event import MessageEvent, GroupMessageEvent, PrivateMessageEvent
 from nonebot.matcher import Matcher
 from nonebot.params import CommandArg, ArgPlainText, Arg
 from nonebot.typing import T_State
@@ -21,7 +21,7 @@ require("nonebot_plugin_saa")
 require("nonebot_plugin_apscheduler")
 
 from nonebot_plugin_orm import async_scoped_session, get_session
-from nonebot_plugin_saa import AggregatedMessageFactory, Text, TargetQQGroup
+from nonebot_plugin_saa import AggregatedMessageFactory, Text, TargetQQGroup, TargetQQPrivate
 from nonebot_plugin_apscheduler import scheduler
 
 from .config import Config
@@ -145,9 +145,9 @@ async def auto_sign():
             
                 
             if app_signin_flag and game_signin_flag:
-                sign_res_dict[group_id]['success'].append({'roleName':role_name, 'msg':f"{app_signin_msg}\n{game_signin_msg}"})
+                sign_res_dict[group_id]['success'].append({'roleName':role_name, 'msg':f"{app_signin_msg}\n{game_signin_msg}", "qq":user_data.qq_id})
             else:
-                sign_res_dict[group_id]['fail'].append({'roleName':role_name, 'msg':f"{app_signin_msg}\n{game_signin_msg}"})
+                sign_res_dict[group_id]['fail'].append({'roleName':role_name, 'msg':f"{app_signin_msg}\n{game_signin_msg}", "qq":user_data.qq_id})
 
         msgs = []
 
@@ -155,6 +155,8 @@ async def auto_sign():
         for fail_info in sign_res_dict[group_id]['fail']:
             msg_str += f"\n{fail_info['roleName']}：\n{fail_info['msg']}"
         fail_msg = Text(msg_str)
+        if group_id == 0:
+            await Text(f"塔吉多签到失败：\n{fail_info['roleName']}：\n{fail_info['msg']}").send_to(target=TargetQQPrivate(user_id=fail_info['qq']))
         if len(sign_res_dict[group_id]['fail']) > 0:
             msgs.append(fail_msg)
 
@@ -162,16 +164,19 @@ async def auto_sign():
         for success_info in sign_res_dict[group_id]['success']:
             msg_str += f"\n{success_info['roleName']}：\n{success_info['msg']}"
         success_msg = Text(msg_str)
+        if group_id == 0:
+            await Text(f"塔吉多签到成功：\n{success_info['roleName']}：\n{success_info['msg']}").send_to(target=TargetQQPrivate(user_id=success_info['qq']))
         if len(sign_res_dict[group_id]['success']) > 0:
             msgs.append(success_msg)
 
         if len(msgs) > 0:
-            await AggregatedMessageFactory(msgs).send_to(target=TargetQQGroup(group_id=group_id))
+            if group_id != 0:
+                await AggregatedMessageFactory(msgs).send_to(target=TargetQQGroup(group_id=group_id))
     await user_data_database.commit()
     await session.close()
 
 @bind_taygedo_login.handle()
-async def _(bot: Bot, event: GroupMessageEvent, matcher: Matcher, args: Message = CommandArg()):
+async def _(bot: Bot, event: MessageEvent, matcher: Matcher, args: Message = CommandArg()):
     phone = args.extract_plain_text()
     pattern = r'^\d{11}$'
     msg_id = event.message_id
@@ -202,7 +207,7 @@ async def _(state: T_State, phone: str = ArgPlainText()):
     state['device_id'] = device_id
 
 @bind_taygedo_login.got("captcha", prompt="请输入验证码")
-async def _(state: T_State, session: async_scoped_session, event: GroupMessageEvent, captcha: str = ArgPlainText()):
+async def _(state: T_State, session: async_scoped_session, event: MessageEvent, captcha: str = ArgPlainText()):
     pattern = r'^\d{6}$'
     taygedoapi = TaygedoApi()
 
@@ -247,7 +252,10 @@ async def _(state: T_State, session: async_scoped_session, event: GroupMessageEv
     role_name = res['data']['roleName']
 
     # 保存用户数据
-    user_data = UserData(qq_id=event.user_id, group_id=event.group_id, role_name=role_name, uid=uid, device_id=state['device_id'], refresh_token=refresh_token, role_id=role_id, isAutoSigned=True)
+    if isinstance(event, GroupMessageEvent):
+        user_data = UserData(qq_id=event.user_id, group_id=event.group_id, role_name=role_name, uid=uid, device_id=state['device_id'], refresh_token=refresh_token, role_id=role_id, isAutoSigned=True)
+    else:
+        user_data = UserData(qq_id=event.user_id, group_id=0, role_name=role_name, uid=uid, device_id=state['device_id'], refresh_token=refresh_token, role_id=role_id, isAutoSigned=True)
     user_data_database = UserDataDatabase(session)
     if not await user_data_database.add_user_data(user_data):
         await bind_taygedo_login.finish("保存用户数据失败，请稍查看日志")
@@ -299,7 +307,7 @@ async def _(state: T_State, session: async_scoped_session, event: GroupMessageEv
     await bind_taygedo_login.finish(f"{role_name}数据已保存\n{app_signin_msg}\n{game_signin_msg}\n自动签到已开启，将于每天{auto_sign_time}自动签到")
 
 @bind_taygedo_signin.handle()
-async def _(session: async_scoped_session, event: GroupMessageEvent):
+async def _(session: async_scoped_session, event: MessageEvent):
     user_data_database = UserDataDatabase(session)
     user_data = await user_data_database.get_user_data(qq=event.user_id)
     if not user_data:
