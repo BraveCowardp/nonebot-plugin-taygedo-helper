@@ -170,7 +170,7 @@ class TaygedoApi:
             response_data['data'] = response.json()
             logger.debug(f"登录响应: {response_data}")
 
-            if response_data['code'] == 200 and response_data['data']['code'] == 0 and response_data['data']['message'] == '登录成功':
+            if response_data['code'] == 200 and response_data['data']['code'] == 0 and response_data['data']['message'] == '登陆成功':
                 return {'status': True, 'message': response_data['data']['message'], 'result': response_data['data']['result']}
             else:
                 logger.error(f"登录失败: {response_data}")

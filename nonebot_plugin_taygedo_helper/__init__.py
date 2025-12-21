@@ -293,7 +293,7 @@ async def _(state: T_State, session: async_scoped_session, event: MessageEvent, 
         game_signin_msg = f"游戏签到失败：{res['message']}"
     else:
         if signin_state_flag and signin_rewards_flag:
-            reward =signin_rewards[days]
+            reward = signin_rewards[days]
             game_signin_msg = f"游戏签到成功，获得{reward['name']}*{reward['num']}"
         else:
             fail_msg = ""
