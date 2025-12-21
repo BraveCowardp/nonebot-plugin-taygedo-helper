@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "nonebot-plugin-taygedo-helper"
-version = "0.2.0"
+version = "0.3.0"
 description = ""
 authors = ["Irelia <1074822720@qq.com>"]
 license = "MIT"
